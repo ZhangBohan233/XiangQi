@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">XiangQi</string>
+
+    <string name="single_game">Single Game</string>
+    <string name="double_game">Double Game</string>
+
+    <string name="p1">Player 1</string>
+    <string name="p2">Player 2</string>
+
+    <string name="ok">OK</string>
+
+    <string name="red_win">Red Wins!</string>
+    <string name="black_win">Black Wins!</string>
+</resources>

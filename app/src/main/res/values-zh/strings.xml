@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">象棋</string>
+
+    <string name="single_game">单人游戏</string>
+    <string name="double_game">双人游戏</string>
+
+    <string name="p1">Player 1</string>
+    <string name="p2">Player 2</string>
+
+    <string name="ok">确认</string>
+
+    <string name="red_win">红方胜利！</string>
+    <string name="black_win">黑方胜利！</string>
+</resources>
