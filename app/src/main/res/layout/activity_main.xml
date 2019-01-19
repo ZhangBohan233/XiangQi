@@ -24,11 +24,5 @@
             android:onClick="doubleGameAction"
             android:text="@string/double_game" />
 
-        <Button
-            android:id="@+id/lan_game"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="lanGameAction"
-            android:text="@string/lan_game" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
