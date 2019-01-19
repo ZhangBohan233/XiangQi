@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -31,8 +32,6 @@ public class LobbyActivity extends AppCompatActivity {
 
     private EditText portText;
 
-    String mip = "127.0.0.1";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,18 +43,24 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     public void createRoomAction(View view) {
-        HostGame hostGame = new HostGame(getPort(), new Player());
+        HostGame hostGame = new HostGame(new Player(), this);
+
+        portText.setText(hostGame.getServerIP());
 //        adapter.dataSet.add(hostGame);
 //        adapter.notifyItemInserted(adapter.dataSet.size() - 1);
     }
 
     public void joinGameAction(View view) {
 
+        final String text = portText.getText().toString();
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Socket socket = new Socket(HostGame.serverSocket.getInetAddress().getHostAddress(), getPort());
+                    Socket socket = new Socket();
+
+                    socket.connect(new InetSocketAddress(text, HostGame.PORT));
 
                     InputStream is = socket.getInputStream();
                     OutputStream os = socket.getOutputStream();
