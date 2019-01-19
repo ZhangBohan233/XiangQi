@@ -3,6 +3,10 @@
 
     <string name="single_game">单人游戏</string>
     <string name="double_game">双人游戏</string>
+    <string name="lan_game">局域网对战</string>
+
+    <string name="create_room">创建房间</string>
+    <string name="refresh_room">加入房间</string>
 
     <string name="p1">Player 1</string>
     <string name="p2">Player 2</string>
@@ -11,4 +15,6 @@
 
     <string name="red_win">红方胜利！</string>
     <string name="black_win">黑方胜利！</string>
+
+    <string name="no_port">房间不可用</string>
 </resources>

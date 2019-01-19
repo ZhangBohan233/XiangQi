@@ -3,6 +3,10 @@
 
     <string name="single_game">Single Game</string>
     <string name="double_game">Double Game</string>
+    <string name="lan_game">LAN Game</string>
+
+    <string name="create_room">Create Room</string>
+    <string name="refresh_room">Join</string>
 
     <string name="p1">Player 1</string>
     <string name="p2">Player 2</string>
@@ -11,4 +15,6 @@
 
     <string name="red_win">Red Wins!</string>
     <string name="black_win">Black Wins!</string>
+
+    <string name="no_port">Port unavailable</string>
 </resources>

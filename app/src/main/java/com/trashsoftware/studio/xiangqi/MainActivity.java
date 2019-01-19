@@ -21,4 +21,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
     }
+
+    public void lanGameAction(View view) {
+        Intent intent = new Intent(this, LobbyActivity.class);
+        startActivity(intent);
+    }
 }
