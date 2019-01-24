@@ -1,5 +1,6 @@
 package com.trashsoftware.studio.xiangqi;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -58,13 +59,26 @@ public class LobbyActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Socket socket = new Socket();
+                    final Socket socket = new Socket();
 
                     socket.connect(new InetSocketAddress(text, HostGame.PORT));
 
-                    InputStream is = socket.getInputStream();
-                    OutputStream os = socket.getOutputStream();
+                    Thread listening = new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    HostGame.clientListenToStart(socket, new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            startGame(socket, false);
+                                        }
+                                    });
+                                }
+                            });
+                    listening.start();
                     showDialog2(R.string.app_name);
+
+
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                     showDialog2(R.string.no_port);
@@ -72,6 +86,11 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
         thread.start();
+    }
+
+    private void startGame(Socket client, boolean isServer) {
+        Intent intent = new Intent(this, GameActivity.class);
+        startActivity(intent);
     }
 
 
