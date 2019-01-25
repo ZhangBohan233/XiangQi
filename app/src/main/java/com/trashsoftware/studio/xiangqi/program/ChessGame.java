@@ -479,4 +479,12 @@ public class ChessGame {
     public boolean isRedWin() {
         return redWins;
     }
+
+    public boolean isRedTurn() {
+        return redTurn;
+    }
+
+    public void terminate() {
+        terminated = true;
+    }
 }

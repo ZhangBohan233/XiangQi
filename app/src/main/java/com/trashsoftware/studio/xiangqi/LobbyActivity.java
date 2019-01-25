@@ -6,11 +6,12 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
-import com.trashsoftware.studio.xiangqi.program.HostGame;
+import com.trashsoftware.studio.xiangqi.connection.GameConnection;
 import com.trashsoftware.studio.xiangqi.program.Player;
-import com.trashsoftware.studio.xiangqi.views.RoomListAdapter;
 import com.trashsoftware.studio.xiangqi.views.WinDialog;
 
 
@@ -20,89 +21,140 @@ import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 public class LobbyActivity extends AppCompatActivity {
 
 //    RoomListAdapter adapter;
 
-    private EditText portText;
+    private EditText ipText;
+
+    private TextView messageText;
+
+    private Button startButton;
+
+    private GameConnection gameConnection;
+
+    private static InputStream inputStream;
+    private static OutputStream outputStream;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
 
-        portText = findViewById(R.id.port_text);
+        ipText = findViewById(R.id.port_text);
+        messageText = findViewById(R.id.message_text);
+        startButton = findViewById(R.id.start_button);
 
 //        initRecyclerView(new ArrayList<HostGame>());
     }
 
     public void createRoomAction(View view) {
-        HostGame hostGame = new HostGame(new Player(), this);
+        try {
+            String localHostAddress = ipText.getText().toString();
+            gameConnection = new GameConnection(localHostAddress, 1);
+            gameConnection.createServer();
 
-        portText.setText(hostGame.getServerIP());
-//        adapter.dataSet.add(hostGame);
-//        adapter.notifyItemInserted(adapter.dataSet.size() - 1);
+            messageText.setText(R.string.create_success);
+//            startButton.setEnabled(true);
+
+            System.out.println("Listening on ip " + localHostAddress);
+
+//            refreshListOwner();
+
+            Thread listen = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (!gameConnection.isFull()) {
+                            gameConnection.acceptOne();
+                        }
+                        startButton.setEnabled(true);
+                        messageText.setText(R.string.ready);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            listen.start();
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    public static InputStream getInputStream() {
+        return inputStream;
+    }
+
+    public static OutputStream getOutputStream() {
+        return outputStream;
     }
 
     public void joinGameAction(View view) {
 
-        final String text = portText.getText().toString();
+        final String ip = ipText.getText().toString();
 
-        Thread thread = new Thread(new Runnable() {
+        Thread listening = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    final Socket socket = new Socket();
+                    final Socket client = new Socket();
+                    client.connect(new InetSocketAddress(ip, GameConnection.PORT));
 
-                    socket.connect(new InetSocketAddress(text, HostGame.PORT));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            messageText.setText(R.string.connect_success);
+                        }
+                    });
+                    System.out.println("Connected to " + ip);
 
-                    Thread listening = new Thread(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    HostGame.clientListenToStart(socket, new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            startGame(socket, false);
-                                        }
-                                    });
-                                }
-                            });
-                    listening.start();
-                    showDialog2(R.string.app_name);
-
-
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                    showDialog2(R.string.no_port);
+                    GameConnection.clientListenToStart(client, new Runnable() {
+                        @Override
+                        public void run() {
+                            startGame(client, false);
+                        }
+                    });
+                } catch (IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            messageText.setText(R.string.connect_failed);
+                        }
+                    });
+                    e.printStackTrace();
                 }
             }
         });
-        thread.start();
+        listening.start();
+
+    }
+
+    public void startGameAction(View view) throws IOException {
+        gameConnection.broadcastStart();
+
+        startGame(gameConnection.getClientSockets()[0], true);
     }
 
     private void startGame(Socket client, boolean isServer) {
-        Intent intent = new Intent(this, GameActivity.class);
-        startActivity(intent);
+        try {
+            inputStream = client.getInputStream();
+            outputStream = client.getOutputStream();
+
+            Intent intent = new Intent(this, GameActivity.class);
+
+            intent.putExtra("isServer", isServer);
+            intent.putExtra("isLocal", false);
+
+            startActivity(intent);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
     }
 
-
-    private int getPort() {
-        return Integer.valueOf(portText.getText().toString());
-    }
-//    private void initRecyclerView(ArrayList<HostGame> strings) {
-//        RecyclerView rv = findViewById(R.id.room_list);
-//        rv.setLayoutManager(new GridLayoutManager(this, 1));
-//        adapter = new RoomListAdapter(this, strings);
-//        rv.setAdapter(adapter);
-//    }
 
     private void showDialog2(int code) {
         WinDialog dialog = new WinDialog();

@@ -26,8 +26,23 @@ public class GameActivity extends AppCompatActivity {
         gameView.setParent(this);
         gameView.setDeathViews(black, red);
 
+        boolean isServer, isLocal;
+        try {
+            isServer = getIntent().getExtras().getBoolean("isServer");
+            isLocal = getIntent().getExtras().getBoolean("isLocal");
+        } catch (NullPointerException e) {
+            isServer = false;
+            isLocal = true;
+        }
+
+        gameView.setConnection(LobbyActivity.getInputStream(), LobbyActivity.getOutputStream(),
+                isServer, isLocal);
+
         black.setGameView(gameView);
         red.setGameView(gameView);
-        gameView.startNewGame();
+
+        gameView.listen();
+
+        gameView.startGame();
     }
 }

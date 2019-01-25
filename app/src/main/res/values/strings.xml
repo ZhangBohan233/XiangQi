@@ -17,4 +17,10 @@
     <string name="black_win">Black Wins!</string>
 
     <string name="no_port">Port unavailable</string>
+
+    <string name="start_game">Start</string>
+    <string name="create_success">Room Created!</string>
+    <string name="ready">Ready!</string>
+    <string name="connect_success">Connected!</string>
+    <string name="connect_failed">Connection failed!</string>
 </resources>
