@@ -28,14 +28,21 @@
                 android:id="@+id/create_room"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.5"
+                android:layout_weight="0.4"
                 android:onClick="createRoomAction"
                 android:text="@string/create_room" />
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.5"
+                android:layout_weight="0.4"
+                android:onClick="getHostIpAction"
+                android:text="@string/get_host" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
                 android:onClick="joinGameAction"
                 android:text="@string/refresh_room" />
 

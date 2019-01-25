@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.trashsoftware.studio.xiangqi.connection.GameConnection;
+import com.trashsoftware.studio.xiangqi.connection.Host;
 import com.trashsoftware.studio.xiangqi.program.Player;
 import com.trashsoftware.studio.xiangqi.views.WinDialog;
 
@@ -69,8 +70,13 @@ public class LobbyActivity extends AppCompatActivity {
                         while (!gameConnection.isFull()) {
                             gameConnection.acceptOne();
                         }
-                        startButton.setEnabled(true);
-                        messageText.setText(R.string.ready);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                startButton.setEnabled(true);
+                                messageText.setText(R.string.ready);
+                            }
+                        });
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -83,6 +89,26 @@ public class LobbyActivity extends AppCompatActivity {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+    }
+
+    public void getHostIpAction(View view){
+        Thread get = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final String ip = Host.getHost().getHostAddress();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ipText.setText(ip);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        get.start();
     }
 
     public static InputStream getInputStream() {
@@ -133,8 +159,18 @@ public class LobbyActivity extends AppCompatActivity {
 
     }
 
-    public void startGameAction(View view) throws IOException {
-        gameConnection.broadcastStart();
+    public void startGameAction(View view) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    gameConnection.broadcastStart();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
 
         startGame(gameConnection.getClientSockets()[0], true);
     }

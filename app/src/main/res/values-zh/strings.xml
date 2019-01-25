@@ -17,6 +17,7 @@
     <string name="black_win">黑方胜利！</string>
 
     <string name="no_port">房间不可用</string>
+    <string name="get_host">获取本机IP</string>
 
     <string name="start_game">开始游戏</string>
     <string name="create_success">房间创建成功！</string>
