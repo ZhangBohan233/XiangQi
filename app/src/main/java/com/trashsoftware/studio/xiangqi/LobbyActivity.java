@@ -91,7 +91,7 @@ public class LobbyActivity extends AppCompatActivity {
         }
     }
 
-    public void getHostIpAction(View view){
+    public void getHostIpAction(View view) {
         Thread get = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -128,6 +128,7 @@ public class LobbyActivity extends AppCompatActivity {
             public void run() {
                 try {
                     final Socket client = new Socket();
+                    System.out.println("Trying connecting to " + ip);
                     client.connect(new InetSocketAddress(ip, GameConnection.PORT));
 
                     runOnUiThread(new Runnable() {
