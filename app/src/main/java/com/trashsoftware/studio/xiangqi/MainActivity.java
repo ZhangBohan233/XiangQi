@@ -13,8 +13,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    public void pveGameAction(View view) {
+        pveGame();
+    }
+
     public void doubleGameAction(View view) {
         doubleGame();
+    }
+
+    private void pveGame() {
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("isPve", true);
+        startActivity(intent);
     }
 
     private void doubleGame() {

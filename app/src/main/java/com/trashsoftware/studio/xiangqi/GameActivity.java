@@ -26,17 +26,23 @@ public class GameActivity extends AppCompatActivity {
         gameView.setParent(this);
         gameView.setDeathViews(black, red);
 
-        boolean isServer, isLocal;
-        try {
+        boolean isServer = false;
+        boolean isLocal = true;
+        boolean isPve = false;
+        if (getIntent().getExtras() == null) {  // local pvp game
+//            isServer = false;
+//            isLocal = true;
+        } else if (getIntent().getExtras().containsKey("isPve") &&
+                getIntent().getExtras().getBoolean("isPve")) {  // local pve
+            isPve = true;
+        } else {
             isServer = getIntent().getExtras().getBoolean("isServer");
             isLocal = getIntent().getExtras().getBoolean("isLocal");
-        } catch (NullPointerException e) {
-            isServer = false;
-            isLocal = true;
         }
 
+
         gameView.setConnection(LobbyActivity.getInputStream(), LobbyActivity.getOutputStream(),
-                isServer, isLocal);
+                isServer, isLocal, isPve);
 
         black.setGameView(gameView);
         red.setGameView(gameView);

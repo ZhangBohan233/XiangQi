@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +16,8 @@ import com.trashsoftware.studio.xiangqi.connection.GameConnection;
 import com.trashsoftware.studio.xiangqi.dock.NetGame;
 import com.trashsoftware.studio.xiangqi.program.Chess;
 import com.trashsoftware.studio.xiangqi.program.ChessGame;
+import com.trashsoftware.studio.xiangqi.program.chessAi.ChessAI;
+import com.trashsoftware.studio.xiangqi.program.chessAi.Move;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +36,8 @@ public class GameView extends View implements NetGame {
     private final static byte RECEIVED = 7;
 
     private final static byte TERMINATED = 8;
+
+    private static final int MAX_DEPTH = 4;
 
     private GameActivity parent;
 
@@ -55,6 +60,10 @@ public class GameView extends View implements NetGame {
     private boolean isServer;
 
     private boolean isLocalGame;
+
+    private boolean isPve;
+
+    private ChessAI chessAI;
 
     public GameView(Context context) {
         super(context);
@@ -82,11 +91,17 @@ public class GameView extends View implements NetGame {
         this.parent = parent;
     }
 
-    public void setConnection(InputStream is, OutputStream os, boolean server, boolean localGame) {
+    public void setConnection(InputStream is, OutputStream os, boolean server, boolean localGame,
+                              boolean pve) {
         inputStream = is;
         outputStream = os;
         isServer = server;
         isLocalGame = localGame;
+        isPve = pve;
+
+        if (isPve) {
+            chessAI = new ChessAI(MAX_DEPTH, false);
+        }
     }
 
     public ChessGame getChessGame() {
@@ -255,11 +270,6 @@ public class GameView extends View implements NetGame {
                             final int r = buffer[1] & 0xff;
                             final int c = buffer[2] & 0xff;
                             if (action == SELECT) {
-//                            Platform.runLater(() -> {
-//                                chessGame.selectPosition(r, c);
-//                                selection = chessGame.getChessAt(r, c);
-//                                invalidate();
-//                            });
                                 runLater(new Runnable() {
                                     @Override
                                     public void run() {
@@ -270,11 +280,6 @@ public class GameView extends View implements NetGame {
                                 });
                                 replyConfirm();
                             } else if (action == DESELECT) {
-//                            Platform.runLater(() -> {
-//                                chessGame.deSelectPosition(r, c);
-//                                selection = null;
-//                                draw();
-//                            });
                                 runLater(new Runnable() {
                                     @Override
                                     public void run() {
@@ -285,13 +290,6 @@ public class GameView extends View implements NetGame {
                                 });
                                 replyConfirm();
                             } else if (action == MOVE) {
-//                            Platform.runLater(() -> {
-//                                chessGame.move(r, c);
-//                                selection = null;
-//                                draw();
-//                                drawDead();
-//                                checkTerminateAndShow();
-//                            });
                                 runLater(new Runnable() {
                                     @Override
                                     public void run() {
@@ -307,8 +305,6 @@ public class GameView extends View implements NetGame {
                             }
                         } else if (read == 1) {
                             if (buffer[0] == GameConnection.CONFIRM) {
-//                            System.out.println("Confirmed!");
-//                            stopTimer();
                             } else if (action == GameConnection.CLOSE) {
                                 chessGame.terminate();
 //                            Platform.runLater(() -> showAlert(resources.getString("error"), resources.getString("user_exit"), ""));
@@ -371,48 +367,35 @@ public class GameView extends View implements NetGame {
                             redDeaths.invalidate();
                             blackDeaths.invalidate();
                             checkTerminateAndShow();
+
+                            if (isPve && chessAI.isRed() == chessGame.isRedTurn()) {
+                                AsyncTask.execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final Move aiMove = chessAI.move(chessGame);
+                                        chessGame.selectPosition(aiMove.getSrcPos());
+                                        if (!chessGame.move(aiMove.getDestPos())) {
+                                            throw new RuntimeException("failed to move");
+                                        }
+                                        runLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                invalidate();
+                                                redDeaths.invalidate();
+                                                blackDeaths.invalidate();
+                                                checkTerminateAndShow();
+                                            }
+                                        });
+                                    }
+                                });
+
+                            }
                         }
                     }
                 }
             }
         }
 
-//        if (checkPos(pos)) {
-//            if (selection == null) {
-//                boolean click = chessGame.selectPosition(pos[0], pos[1]);
-//                if (click) {
-//                    selection = chessGame.getChessAt(pos[0], pos[1]);
-//                    invalidate();
-//                }
-//            } else {
-//                // move
-//
-//                Chess clicked = chessGame.getChessAt(pos[0], pos[1]);
-//                if (clicked == selection) {
-//                    selection = null;
-//                    chessGame.deSelectPosition(pos[0], pos[1]);
-//                    invalidate();
-//                } else {
-//                    if (chessGame.move(pos[0], pos[1])) {
-//                        // Successfully moved
-//                        selection = null;
-//                        invalidate();
-//                        if (chessGame.isTerminated()) {
-//                            WinDialog dialog = new WinDialog();
-//                            int p;
-//                            if (chessGame.isRedWin()) {
-//                                p = R.string.red_win;
-//                            } else {
-//                                p = R.string.black_win;
-//                            }
-//                            dialog.show(parent.getSupportFragmentManager(), parent.getString(p));
-//                        }
-//                        redDeaths.invalidate();
-//                        blackDeaths.invalidate();
-//                    }
-//                }
-//            }
-//        }
         return super.onTouchEvent(event);
     }
 
